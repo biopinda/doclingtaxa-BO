@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell.exe:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial project setup with specification for PDF monograph conversion\n\nCreated feature specification (001-espe-projeto-vai) for converting fauna and flora monographs from PDF to structured JSON format. System will:\n- Scan directories for PDF files\n- Extract hierarchical taxonomic data (Kingdom through Species)\n- Store structured data in MongoDB\n- Focus on species-level descriptions only\n- Extract core fields: scientific name, description, Forma de Vida, Substrato, Domínios Fitogeográficos, Tipos de Vegetação, Distribuição Geográfica\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
