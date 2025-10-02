@@ -1,10 +1,10 @@
-# DoclingTaxa
+# DoclingTaxaBO
 
 PDF Monograph to Structured JSON Conversion following Darwin Core (DwC) standard.
 
 ## Overview
 
-DoclingTaxa processes scientific monographs about fauna and flora in PDF format, extracting taxonomic, morphological, and ecological information into structured JSON documents stored in MongoDB. The system follows the Darwin Core (DwC) biodiversity data standard with extensions for detailed species descriptions.
+DoclingTaxaBO processes scientific monographs about fauna and flora in PDF format, extracting taxonomic, morphological, and ecological information into structured JSON documents stored in MongoDB. The system follows the Darwin Core (DwC) biodiversity data standard with extensions for detailed species descriptions.
 
 ## Features
 
@@ -30,7 +30,7 @@ DoclingTaxa processes scientific monographs about fauna and flora in PDF format,
 
 ```bash
 git clone <repository-url>
-cd doclingtaxa
+cd doclingtaxaBO
 ```
 
 ### 2. Create Virtual Environment
@@ -83,37 +83,37 @@ mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?aut
 
 ```bash
 # Process monographs from the test directory
-doclingtaxa process --input-dir monografias
+doclingtaxaBO process --input-dir monografias
 ```
 
 ### Process Custom Directory
 
 ```bash
-doclingtaxa process --input-dir /path/to/pdfs
+doclingtaxaBO process --input-dir /path/to/pdfs
 ```
 
 ### With Custom MongoDB URI (if needed)
 
 ```bash
-doclingtaxa process --input-dir /path/to/pdfs --mongodb-uri "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin"
+doclingtaxaBO process --input-dir /path/to/pdfs --mongodb-uri "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin"
 ```
 
 ### JSON Output Format
 
 ```bash
-doclingtaxa process --input-dir /path/to/pdfs --output-format json > results.json
+doclingtaxaBO process --input-dir /path/to/pdfs --output-format json > results.json
 ```
 
 ### Verbose Logging
 
 ```bash
-doclingtaxa process --input-dir /path/to/pdfs --verbose
+doclingtaxaBO process --input-dir /path/to/pdfs --verbose
 ```
 
 ## CLI Usage
 
 ```
-doclingtaxa process [OPTIONS]
+doclingtaxaBO process [OPTIONS]
 
 Options:
   --input-dir TEXT        Directory containing PDF monographs [required]
@@ -255,7 +255,7 @@ mypy src/
 
 ### Project Structure
 ```
-doclingtaxa/
+doclingtaxaBO/
 ├── src/
 │   ├── models/              # Pydantic models (DwC schema)
 │   ├── extractors/          # PDF processing logic

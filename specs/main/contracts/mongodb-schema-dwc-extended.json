@@ -1,0 +1,456 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "bibliographicCitation",
+      "canonicalName",
+      "family",
+      "flatScientificName",
+      "genus",
+      "higherClassification",
+      "kingdom",
+      "parentNameUsage",
+      "parentNameUsageID",
+      "phylum",
+      "scientificName",
+      "scientificNameAuthorship",
+      "specificEpithet",
+      "taxonID",
+      "taxonRank"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "acceptedNameUsage": {
+        "bsonType": "string"
+      },
+      "acceptedNameUsageID": {
+        "bsonType": "string"
+      },
+      "bibliographicCitation": {
+        "bsonType": "string"
+      },
+      "canonicalName": {
+        "bsonType": "string"
+      },
+      "class": {
+        "bsonType": "string"
+      },
+      "distribution": {
+        "bsonType": "object",
+        "properties": {
+          "countryCode": {
+            "anyOf": [
+              {
+                "bsonType": "null"
+              },
+              {
+                "bsonType": "array",
+                "items": {
+                  "bsonType": "string"
+                }
+              }
+            ]
+          },
+          "Endemism": {
+            "bsonType": "string"
+          },
+          "occurrence": {
+            "anyOf": [
+              {
+                "bsonType": "array",
+                "items": {
+                  "bsonType": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              {
+                "bsonType": "null"
+              }
+            ]
+          },
+          "origin": {
+            "bsonType": [
+              "string",
+              "null"
+            ]
+          },
+          "phytogeographicDomains": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "string"
+            }
+          },
+          "vegetationType": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "string"
+            }
+          }
+        },
+        "required": [
+          "occurrence"
+        ]
+      },
+      "family": {
+        "bsonType": "string"
+      },
+      "flatScientificName": {
+        "bsonType": "string"
+      },
+      "genus": {
+        "bsonType": "string"
+      },
+      "higherClassification": {
+        "bsonType": "string"
+      },
+      "infraspecificEpithet": {
+        "bsonType": "string"
+      },
+      "institutionCode": {
+        "bsonType": "string"
+      },
+      "institutionID": {
+        "bsonType": "string"
+      },
+      "kingdom": {
+        "bsonType": "string"
+      },
+      "language": {
+        "bsonType": "string"
+      },
+      "modified": {
+        "bsonType": "string"
+      },
+      "namePublishedIn": {
+        "bsonType": "string"
+      },
+      "namePublishedInYear": {
+        "bsonType": "string"
+      },
+      "nomenclaturalStatus": {
+        "bsonType": "string"
+      },
+      "order": {
+        "bsonType": "string"
+      },
+      "originalNameUsageID": {
+        "bsonType": "string"
+      },
+      "othernames": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "scientificName": {
+              "bsonType": "string"
+            },
+            "taxonID": {
+              "bsonType": "string"
+            },
+            "taxonomicStatus": {
+              "bsonType": "string"
+            }
+          },
+          "required": [
+            "scientificName",
+            "taxonID"
+          ]
+        }
+      },
+      "parentNameUsage": {
+        "bsonType": "string"
+      },
+      "parentNameUsageID": {
+        "bsonType": "string"
+      },
+      "phylum": {
+        "bsonType": "string"
+      },
+      "reference": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "bibliographicCitation": {
+              "bsonType": "string"
+            },
+            "creator": {
+              "bsonType": "string"
+            },
+            "date": {
+              "bsonType": "string"
+            },
+            "identifier": {
+              "bsonType": "string"
+            },
+            "title": {
+              "bsonType": "string"
+            },
+            "type": {
+              "bsonType": "string"
+            }
+          }
+        }
+      },
+      "references": {
+        "bsonType": "string"
+      },
+      "scientificName": {
+        "bsonType": "string"
+      },
+      "scientificNameAuthorship": {
+        "bsonType": "string"
+      },
+      "speciesprofile": {
+        "anyOf": [
+          {
+            "bsonType": "object",
+            "properties": {
+              "lifeForm": {
+                "bsonType": "object",
+                "properties": {
+                  "habitat": {
+                    "bsonType": "array",
+                    "items": {
+                      "bsonType": "string"
+                    }
+                  },
+                  "lifeForm": {
+                    "bsonType": "array",
+                    "items": {
+                      "bsonType": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "lifeForm"
+            ]
+          },
+          {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "properties": {
+                "habitat": {
+                  "bsonType": "string"
+                },
+                "lifeForm": {
+                  "bsonType": "string"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "specificEpithet": {
+        "bsonType": "string"
+      },
+      "subfamily": {
+        "bsonType": "string"
+      },
+      "subgenus": {
+        "bsonType": "string"
+      },
+      "subtribe": {
+        "bsonType": "string"
+      },
+      "superfamily": {
+        "bsonType": "string"
+      },
+      "taxonID": {
+        "bsonType": "string"
+      },
+      "taxonomicStatus": {
+        "bsonType": "string"
+      },
+      "taxonRank": {
+        "bsonType": "string"
+      },
+      "tribe": {
+        "bsonType": "string"
+      },
+      "typesandspecimen": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "catalogNumber": {
+              "bsonType": "string"
+            },
+            "collectionCode": {
+              "bsonType": "string"
+            },
+            "locality": {
+              "bsonType": "string"
+            },
+            "recordedBy": {
+              "bsonType": "string"
+            },
+            "source": {
+              "bsonType": "string"
+            },
+            "typeStatus": {
+              "bsonType": "string"
+            }
+          }
+        }
+      },
+      "vernacularname": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "object",
+          "properties": {
+            "language": {
+              "bsonType": "string"
+            },
+            "locality": {
+              "bsonType": "string"
+            },
+            "vernacularName": {
+              "bsonType": "string"
+            }
+          },
+          "required": [
+            "language",
+            "vernacularName"
+          ]
+        }
+      },
+      "structuredDescription": {
+        "bsonType": "object",
+        "properties": {
+          "sourcePDF": {
+            "bsonType": "object",
+            "properties": {
+              "filePath": {"bsonType": "string"},
+              "fileHash": {"bsonType": "string"},
+              "extractedDate": {"bsonType": "date"},
+              "pageReferences": {
+                "bsonType": "array",
+                "items": {"bsonType": "int"}
+              }
+            },
+            "required": ["filePath", "fileHash", "extractedDate"]
+          },
+          "morphology": {
+            "bsonType": "object",
+            "properties": {
+              "generalDescription": {"bsonType": "string"},
+              "habit": {"bsonType": "string"},
+              "height": {"bsonType": "string"},
+              "stems": {"bsonType": "string"},
+              "leaves": {"bsonType": "string"},
+              "inflorescence": {"bsonType": "string"},
+              "flowers": {"bsonType": "string"},
+              "fruits": {"bsonType": "string"},
+              "seeds": {"bsonType": "string"},
+              "rootSystem": {"bsonType": "string"}
+            }
+          },
+          "ecology": {
+            "bsonType": "object",
+            "properties": {
+              "habitat": {"bsonType": "string"},
+              "associates": {
+                "bsonType": "array",
+                "items": {"bsonType": "string"}
+              },
+              "altitudeRange": {"bsonType": "string"},
+              "soilType": {"bsonType": "string"},
+              "luminosity": {"bsonType": "string"}
+            }
+          },
+          "phenology": {
+            "bsonType": "object",
+            "properties": {
+              "flowering": {"bsonType": "string"},
+              "fruiting": {"bsonType": "string"},
+              "leafShedding": {"bsonType": "string"}
+            }
+          },
+          "distribution": {
+            "bsonType": "object",
+            "properties": {
+              "detailedDescription": {"bsonType": "string"},
+              "states": {
+                "bsonType": "array",
+                "items": {"bsonType": "string"}
+              },
+              "municipalities": {
+                "bsonType": "array",
+                "items": {"bsonType": "string"}
+              },
+              "coordinates": {
+                "bsonType": "array",
+                "items": {
+                  "bsonType": "object",
+                  "properties": {
+                    "latitude": {"bsonType": "double"},
+                    "longitude": {"bsonType": "double"},
+                    "locality": {"bsonType": "string"}
+                  }
+                }
+              }
+            }
+          },
+          "diagnosticCharacters": {
+            "bsonType": "array",
+            "items": {"bsonType": "string"}
+          },
+          "uses": {
+            "bsonType": "object",
+            "properties": {
+              "economic": {"bsonType": "string"},
+              "medicinal": {"bsonType": "string"},
+              "ornamental": {"bsonType": "string"},
+              "ecological": {"bsonType": "string"}
+            }
+          },
+          "conservationStatus": {
+            "bsonType": "object",
+            "properties": {
+              "category": {"bsonType": "string"},
+              "criteria": {"bsonType": "string"},
+              "threats": {
+                "bsonType": "array",
+                "items": {"bsonType": "string"}
+              }
+            }
+          },
+          "rawText": {"bsonType": "string"}
+        },
+        "required": ["sourcePDF"]
+      },
+      "processingMetadata": {
+        "bsonType": "object",
+        "properties": {
+          "status": {
+            "enum": ["completed", "partial", "failed"]
+          },
+          "extractedSections": {
+            "bsonType": "array",
+            "items": {"bsonType": "string"}
+          },
+          "validationWarnings": {
+            "bsonType": "array",
+            "items": {"bsonType": "string"}
+          },
+          "extractionErrors": {
+            "bsonType": "array",
+            "items": {"bsonType": "string"}
+          },
+          "processingDuration": {"bsonType": "double"},
+          "doclingVersion": {"bsonType": "string"}
+        },
+        "required": ["status"]
+      }
+    }
+  }
+}

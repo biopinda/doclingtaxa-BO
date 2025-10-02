@@ -26,7 +26,7 @@ This document provides:
 ```bash
 # Clone repository
 git clone <repository-url>
-cd doclingtaxa
+cd doclingtaxaBO
 
 # Create virtual environment
 python -m venv venv
@@ -36,7 +36,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # Verify installation
-doclingtaxa --version
+doclingtaxaBO --version
 ```
 
 ### MongoDB Setup
@@ -75,7 +75,7 @@ LOG_LEVEL=INFO
 ls monografias/*.pdf
 
 # 2. Run processing on first PDF
-doclingtaxa process --input-dir monografias --verbose
+doclingtaxaBO process --input-dir monografias --verbose
 
 # 3. Verify output
 # Expected: Success message with species count
@@ -127,7 +127,7 @@ mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?aut
 ls -la monografias/*.pdf
 
 # 2. Run batch processing
-doclingtaxa process --input-dir monografias --output-format json > results.json
+doclingtaxaBO process --input-dir monografias --output-format json > results.json
 
 # 3. Analyze results
 cat results.json | jq '.total_files, .succeeded | length'
@@ -161,7 +161,7 @@ mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?aut
 **Steps**:
 ```bash
 # 1. Process monografias directory (may contain valid and invalid PDFs)
-doclingtaxa process --input-dir monografias --verbose
+doclingtaxaBO process --input-dir monografias --verbose
 
 # 2. Review output for errors
 # Expected: Processing continues despite individual failures
@@ -215,7 +215,7 @@ assert all("error" in failure for failure in result["failed"])
 **Steps**:
 ```bash
 # 1. Process monografias with species filtering
-doclingtaxa process --input-dir monografias --verbose
+doclingtaxaBO process --input-dir monografias --verbose
 
 # 2. Verify only species-level descriptions are stored
 ```
@@ -258,7 +258,7 @@ check_descriptions(doc["taxonomy_root"])
 **Steps**:
 ```bash
 # 1. Process monografias data
-doclingtaxa process --input-dir monografias
+doclingtaxaBO process --input-dir monografias
 
 # 2. Query all documents
 mongosh mongodb://localhost:27017/taxonomy_db --eval "
@@ -312,7 +312,7 @@ db.monographs.aggregate([
 **Steps**:
 ```bash
 # Process monografias (may include PDFs with incomplete optional data)
-doclingtaxa process --input-dir monografias --output-format json > partial_result.json
+doclingtaxaBO process --input-dir monografias --output-format json > partial_result.json
 ```
 
 **Expected Result**:

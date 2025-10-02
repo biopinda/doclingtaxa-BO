@@ -1,0 +1,216 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MonographDocument",
+  "description": "MongoDB schema for processed PDF monograph with hierarchical taxonomy",
+  "type": "object",
+  "required": [
+    "_id",
+    "source_pdf_path",
+    "source_pdf_hash",
+    "processing_timestamp",
+    "taxonomy_root",
+    "metadata"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "MongoDB ObjectId as string",
+      "pattern": "^[a-f0-9]{24}$"
+    },
+    "source_pdf_path": {
+      "type": "string",
+      "description": "Absolute path to source PDF file",
+      "minLength": 1
+    },
+    "source_pdf_hash": {
+      "type": "string",
+      "description": "MD5 or SHA256 hash of PDF file for duplicate detection",
+      "pattern": "^[a-f0-9]{32,64}$"
+    },
+    "monograph_title": {
+      "type": ["string", "null"],
+      "description": "Extracted document title (optional)",
+      "maxLength": 500
+    },
+    "processing_timestamp": {
+      "type": "string",
+      "description": "ISO 8601 timestamp when processing completed",
+      "format": "date-time"
+    },
+    "taxonomy_root": {
+      "$ref": "#/definitions/TaxonNode"
+    },
+    "metadata": {
+      "$ref": "#/definitions/ProcessingMetadata"
+    }
+  },
+  "definitions": {
+    "TaxonNode": {
+      "type": "object",
+      "description": "Recursive taxonomic hierarchy node (Kingdom through Species)",
+      "required": ["rank", "scientific_name", "children"],
+      "properties": {
+        "rank": {
+          "type": "string",
+          "enum": ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
+          "description": "Taxonomic classification level"
+        },
+        "scientific_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Formal scientific name (e.g., 'Panthera leo')"
+        },
+        "common_names": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Vernacular names in various languages"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "maxLength": 10000,
+          "description": "Taxonomic description (required for species rank, null for family/genus)"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TaxonNode"
+          },
+          "description": "Nested child taxa (one rank level below)"
+        },
+        "biological_attributes": {
+          "oneOf": [
+            {"$ref": "#/definitions/BiologicalAttributes"},
+            {"type": "null"}
+          ],
+          "description": "Species-level ecological data (required for species rank, null otherwise)"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"rank": {"const": "species"}}
+          },
+          "then": {
+            "required": ["description", "biological_attributes"],
+            "properties": {
+              "description": {"type": "string", "minLength": 1},
+              "biological_attributes": {"$ref": "#/definitions/BiologicalAttributes"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"rank": {"enum": ["family", "genus"]}}
+          },
+          "then": {
+            "properties": {
+              "description": {"type": "null"},
+              "biological_attributes": {"type": "null"}
+            }
+          }
+        }
+      ]
+    },
+    "BiologicalAttributes": {
+      "type": "object",
+      "description": "Species-level ecological and morphological characteristics",
+      "properties": {
+        "forma_de_vida": {
+          "type": ["string", "null"],
+          "maxLength": 500,
+          "description": "Life form (e.g., 'arvoreta', 'herbácea')"
+        },
+        "substrato": {
+          "type": ["string", "null"],
+          "maxLength": 500,
+          "description": "Substrate type (e.g., 'terrícola', 'rupícola')"
+        },
+        "dominios_fitogeograficos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": "Phytogeographic domains (e.g., ['Amazônia', 'Mata Atlântica'])"
+        },
+        "tipos_de_vegetacao": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": "Vegetation types (e.g., ['Floresta Ombrófila', 'Cerrado'])"
+        },
+        "distribuicao_geografica": {
+          "type": ["string", "null"],
+          "maxLength": 1000,
+          "description": "Geographic distribution (states, countries, regions)"
+        }
+      }
+    },
+    "ProcessingMetadata": {
+      "type": "object",
+      "required": [
+        "status",
+        "total_species_extracted",
+        "validation_warnings",
+        "extraction_errors",
+        "processing_duration_seconds"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["completed", "partial", "failed"],
+          "description": "Overall processing outcome"
+        },
+        "total_species_extracted": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of species-level nodes extracted"
+        },
+        "validation_warnings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "description": "Non-fatal issues during processing"
+        },
+        "extraction_errors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "description": "Recoverable errors encountered"
+        },
+        "processing_duration_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Time taken to process PDF in seconds"
+        }
+      }
+    }
+  },
+  "indexes": [
+    {
+      "name": "source_pdf_hash_unique",
+      "keys": {"source_pdf_hash": 1},
+      "unique": true,
+      "description": "Prevent duplicate processing of same PDF"
+    },
+    {
+      "name": "processing_timestamp_desc",
+      "keys": {"processing_timestamp": -1},
+      "description": "Query recent documents efficiently"
+    },
+    {
+      "name": "status_asc",
+      "keys": {"metadata.status": 1},
+      "description": "Filter by processing status"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 [project]
-name = "doclingtaxa"
+name = "doclingtaxaBO"
 version = "0.1.0"
 description = "PDF Monograph to Structured JSON Conversion following Darwin Core standard"
 readme = "README.md"
@@ -27,7 +27,7 @@ dev = [
 ]
 
 [project.scripts]
-doclingtaxa = "src.cli.main:main"
+doclingtaxaBO = "src.cli.main:main"
 
 [build-system]
 requires = ["setuptools>=68.0.0", "wheel"]
