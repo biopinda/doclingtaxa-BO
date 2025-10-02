@@ -71,12 +71,11 @@ LOG_LEVEL=INFO
 
 **Steps**:
 ```bash
-# 1. Prepare test PDF
-mkdir -p test_data
-cp sample_pdfs/flora_example.pdf test_data/
+# 1. Verify test PDFs exist in monografias directory
+ls monografias/*.pdf
 
-# 2. Run processing
-doclingtaxa process --input-dir test_data --verbose
+# 2. Run processing on first PDF
+doclingtaxa process --input-dir monografias --verbose
 
 # 3. Verify output
 # Expected: Success message with species count
@@ -84,10 +83,10 @@ doclingtaxa process --input-dir test_data --verbose
 
 **Expected Output**:
 ```
-Processing PDFs from: test_data
+Processing PDFs from: monografias
 MongoDB: mongodb://dwc2json@192.168.1.10:27017/dwc2json (collection: monografias)
 
-[1/1] flora_example.pdf ... ✓ (12 species, 8.3s)
+[1/N] monograph_001.pdf ... ✓ (12 species, 8.3s)
 
 Summary:
   Total:     1 file
@@ -124,13 +123,11 @@ mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?aut
 
 **Steps**:
 ```bash
-# 1. Prepare multiple test PDFs
-mkdir -p batch_test
-cp sample_pdfs/flora_*.pdf batch_test/
-cp sample_pdfs/fauna_*.pdf batch_test/
+# 1. List all PDFs in monografias directory
+ls -la monografias/*.pdf
 
 # 2. Run batch processing
-doclingtaxa process --input-dir batch_test --output-format json > results.json
+doclingtaxa process --input-dir monografias --output-format json > results.json
 
 # 3. Analyze results
 cat results.json | jq '.total_files, .succeeded | length'
@@ -163,23 +160,20 @@ mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?aut
 
 **Steps**:
 ```bash
-# 1. Create test directory with mixed files
-mkdir -p error_test
-cp sample_pdfs/valid_flora.pdf error_test/
-echo "Not a PDF" > error_test/corrupted.pdf
-touch error_test/empty.pdf
+# 1. Process monografias directory (may contain valid and invalid PDFs)
+doclingtaxa process --input-dir monografias --verbose
 
-# 2. Run processing
-doclingtaxa process --input-dir error_test
+# 2. Review output for errors
+# Expected: Processing continues despite individual failures
 ```
 
 **Expected Output**:
 ```
-Processing PDFs from: error_test
+Processing PDFs from: monografias
 
-[1/3] valid_flora.pdf ... ✓ (8 species, 6.1s)
-[2/3] corrupted.pdf ... ✗ (Invalid PDF format: File does not start with %PDF-)
-[3/3] empty.pdf ... ✗ (Invalid PDF format: File size is 0 bytes)
+[1/N] monograph_001.pdf ... ✓ (8 species, 6.1s)
+[2/N] corrupted.pdf ... ✗ (Invalid PDF format: File does not start with %PDF-)
+[3/N] valid_monograph.pdf ... ✓ (15 species, 9.2s)
 
 Summary:
   Total:     3 files
@@ -220,8 +214,10 @@ assert all("error" in failure for failure in result["failed"])
 
 **Steps**:
 ```bash
-# 1. Process PDF with mixed content
-doclingtaxa process --input-dir test_data/filtering_test --verbose
+# 1. Process monografias with species filtering
+doclingtaxa process --input-dir monografias --verbose
+
+# 2. Verify only species-level descriptions are stored
 ```
 
 **Validation**:
@@ -261,8 +257,8 @@ check_descriptions(doc["taxonomy_root"])
 
 **Steps**:
 ```bash
-# 1. Process sample data
-doclingtaxa process --input-dir sample_pdfs
+# 1. Process monografias data
+doclingtaxa process --input-dir monografias
 
 # 2. Query all documents
 mongosh mongodb://localhost:27017/taxonomy_db --eval "
@@ -315,8 +311,8 @@ db.monographs.aggregate([
 
 **Steps**:
 ```bash
-# Process PDF with incomplete data
-doclingtaxa process --input-dir test_data/partial_data --output-format json > partial_result.json
+# Process monografias (may include PDFs with incomplete optional data)
+doclingtaxa process --input-dir monografias --output-format json > partial_result.json
 ```
 
 **Expected Result**:

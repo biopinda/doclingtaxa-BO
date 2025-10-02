@@ -79,7 +79,14 @@ mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?aut
 
 ## Quick Start
 
-### Process Single Directory
+### Process Test Monographs Directory
+
+```bash
+# Process monographs from the test directory
+doclingtaxa process --input-dir monografias
+```
+
+### Process Custom Directory
 
 ```bash
 doclingtaxa process --input-dir /path/to/pdfs
@@ -120,7 +127,7 @@ Options:
 
 ### Human-Readable Format
 ```
-Processing PDFs from: /path/to/pdfs
+Processing PDFs from: monografias
 MongoDB: mongodb://dwc2json@192.168.1.10:27017/dwc2json (collection: monografias)
 
 [1/5] flora_brazil.pdf ... ✓ (47 species, 12.3s)
@@ -143,11 +150,11 @@ Processing time: 68.2 seconds
 {
   "total_files": 5,
   "succeeded": [
-    {"path": "/path/to/pdfs/flora_brazil.pdf", "species": 47, "duration": 12.3},
-    {"path": "/path/to/pdfs/fauna_mammals.pdf", "species": 23, "duration": 8.1}
+    {"path": "monografias/flora_brazil.pdf", "species": 47, "duration": 12.3},
+    {"path": "monografias/fauna_mammals.pdf", "species": 23, "duration": 8.1}
   ],
   "failed": [
-    {"path": "/path/to/pdfs/corrupted.pdf", "error": "Invalid PDF format"}
+    {"path": "monografias/corrupted.pdf", "error": "Invalid PDF format"}
   ],
   "processing_time_seconds": 68.2
 }
