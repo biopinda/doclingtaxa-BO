@@ -6,6 +6,52 @@ Conversão de Monografias em PDF para JSON Estruturado seguindo o padrão Darwin
 
 DoclingTaxaBO processa monografias científicas sobre fauna e flora em formato PDF, extraindo informações taxonômicas, morfológicas e ecológicas em documentos JSON estruturados armazenados no MongoDB. O sistema segue o padrão de dados de biodiversidade Darwin Core (DwC) com extensões para descrições detalhadas de espécies.
 
+## Sobre o Projeto Docling
+
+### O que é Docling?
+
+**Docling** é uma biblioteca de código aberto desenvolvida pela IBM Research Zurich e hospedada pela LF AI & Data Foundation, especializada em processamento inteligente de documentos para aplicações de Inteligência Artificial Generativa.
+
+### Problemas que Resolve
+
+1. **Complexidade na Extração de PDFs**: PDFs científicos contêm layouts complexos, tabelas, imagens e hierarquias de seções que são difíceis de processar com ferramentas tradicionais.
+
+2. **Diversidade de Formatos**: Necessidade de processar diferentes tipos de documentos (PDF, DOCX, PPTX, imagens) com uma única ferramenta.
+
+3. **Preparação para IA**: Documentos precisam ser convertidos em formatos estruturados (JSON, Markdown) para uso em sistemas de IA, RAG (Retrieval-Augmented Generation) e análise semântica.
+
+4. **OCR e Documentos Digitalizados**: PDFs escaneados requerem reconhecimento óptico de caracteres (OCR) integrado para extração de texto.
+
+5. **Privacidade de Dados**: Processamento local de documentos sensíveis sem necessidade de envio para serviços externos.
+
+### Como Funciona
+
+O Docling utiliza **modelos de linguagem visual (Visual Language Models)** como o GraniteDocling para entender a estrutura do documento:
+
+1. **Análise de Layout**: Identifica cabeçalhos, parágrafos, tabelas, figuras e hierarquia de seções
+2. **Ordem de Leitura**: Determina a sequência lógica do conteúdo (importante para documentos de múltiplas colunas)
+3. **Extração de Tabelas**: Reconhece e estrutura tabelas complexas preservando relações entre células
+4. **OCR Integrado**: Processa PDFs escaneados ou imagens com reconhecimento de texto
+5. **Exportação Estruturada**: Converte para formatos padronizados (JSON, Markdown) mantendo a semântica
+
+### Por que Usamos Docling neste Projeto?
+
+No **DoclingTaxaBO**, aproveitamos o Docling para:
+
+- **Extrair hierarquias taxonômicas** (Reino → Filo → Classe → Ordem → Família → Gênero → Espécie) preservando a estrutura original
+- **Identificar seções específicas** como "Morfologia", "Distribuição Geográfica", "Material Examinado"
+- **Processar tabelas** de caracteres diagnósticos e dados morfométricos
+- **Suportar PDFs antigos digitalizados** de monografias históricas usando OCR
+- **Preparar dados para IA** em formato compatível com o padrão Darwin Core para integração com sistemas de biodiversidade
+
+### Tecnologias Docling
+
+- **Python**: Interface simples via CLI e API
+- **Modelos de IA**: Visual Language Models (VLMs) para compreensão de layout
+- **Integrações**: LangChain, LlamaIndex para aplicações de IA
+- **Aceleração**: Suporte MLX para processamento eficiente
+- **Código Aberto**: Licença MIT, comunidade ativa no GitHub
+
 ## Funcionalidades
 
 - 🔬 **Conformidade Darwin Core**: Saída segue padrão internacional de dados de biodiversidade
