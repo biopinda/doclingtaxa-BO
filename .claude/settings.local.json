@@ -24,7 +24,9 @@
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
       "Bash(git push:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

@@ -104,23 +104,23 @@ pip install -e ".[dev]"
 ### 4. Configurar Ambiente
 
 ```bash
-# Copiar template (já configurado com MongoDB de produção)
+# Copiar template de configuração
 cp .env.template .env
 
-# Configuração pré-definida para MongoDB de produção:
-# MONGODB_URI=mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin
-# MONGODB_DATABASE=dwc2json
-# MONGODB_COLLECTION=monografias
+# Edite o arquivo .env com suas credenciais MongoDB:
+# MONGODB_URI=mongodb://seu_usuario:sua_senha@seu_host:27017/?authSource=admin
+# MONGODB_DATABASE=seu_banco
+# MONGODB_COLLECTION=sua_colecao
 ```
 
 ### 5. Verificar Conexão MongoDB
 
 ```bash
-# Testar conexão com MongoDB de produção
-mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin" --eval "db.runCommand({ ping: 1 })"
+# Testar conexão (substitua com suas credenciais)
+mongosh "mongodb://seu_usuario:sua_senha@seu_host:27017/?authSource=admin" --eval "db.runCommand({ ping: 1 })"
 
 # Verificar banco de dados e coleção
-mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?authSource=admin" --eval "db.monografias.countDocuments({})"
+mongosh "mongodb://seu_usuario:sua_senha@seu_host:27017/seu_banco?authSource=admin" --eval "db.sua_colecao.countDocuments({})"
 ```
 
 ## Início Rápido
@@ -141,7 +141,7 @@ doclingtaxaBO process --input-dir /caminho/para/pdfs
 ### Com URI MongoDB Customizada (se necessário)
 
 ```bash
-doclingtaxaBO process --input-dir /caminho/para/pdfs --mongodb-uri "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin"
+doclingtaxaBO process --input-dir /caminho/para/pdfs --mongodb-uri "mongodb://seu_usuario:sua_senha@seu_host:27017/?authSource=admin"
 ```
 
 ### Formato de Saída JSON
@@ -175,7 +175,7 @@ Opções:
 
 ```
 Processando PDFs de: monografias
-MongoDB: mongodb://dwc2json@192.168.1.10:27017/dwc2json (coleção: monografias)
+MongoDB: mongodb://usuario@host:27017/banco (coleção: colecao)
 
 [1/5] flora_brazil.pdf ... ✓ (47 espécies, 12.3s)
 [2/5] fauna_mammals.pdf ... ✓ (23 espécies, 8.1s)
@@ -242,31 +242,31 @@ O sistema armazena dados usando campos padrão Darwin Core (DwC) com extensões:
 
 ## Exemplos de Consultas MongoDB
 
-**Conexão**: `mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?authSource=admin`
+**Nota**: Substitua os valores de conexão pelos seus próprios.
 
 ### Consultar por Nome Científico
 
 ```javascript
-use dwc2json
-db.monografias.find({ scientificName: "Handroanthus chrysotrichus" })
+use seu_banco
+db.sua_colecao.find({ scientificName: "Handroanthus chrysotrichus" })
 ```
 
 ### Consultar por Família
 
 ```javascript
-db.monografias.find({ family: "Bignoniaceae" })
+db.sua_colecao.find({ family: "Bignoniaceae" })
 ```
 
 ### Obter Contagem Total de Espécies
 
 ```javascript
-db.monografias.countDocuments({ taxonRank: "species" })
+db.sua_colecao.countDocuments({ taxonRank: "species" })
 ```
 
 ### Encontrar Espécies em Domínio Específico
 
 ```javascript
-db.monografias.find({
+db.sua_colecao.find({
   "distribution.phytogeographicDomains": "Mata Atlântica"
 })
 ```
@@ -274,7 +274,7 @@ db.monografias.find({
 ### Consultar por PDF de Origem
 
 ```javascript
-db.monografias.find({
+db.sua_colecao.find({
   "structuredDescription.sourcePDF.filePath": { $regex: "flora_brazil" }
 })
 ```

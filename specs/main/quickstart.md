@@ -41,23 +41,23 @@ doclingtaxaBO --version
 
 ### MongoDB Setup
 
-**Production MongoDB Server**: 192.168.1.10:27017
+**Note**: Configure your own MongoDB server credentials.
 
 ```bash
-# Verify connection to production MongoDB
-mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin" --eval "db.runCommand({ ping: 1 })"
+# Verify connection to your MongoDB server
+mongosh "mongodb://your_user:your_password@your_host:27017/?authSource=admin" --eval "db.runCommand({ ping: 1 })"
 
 # Verify database and collection exist
-mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?authSource=admin" --eval "db.monografias.countDocuments({})"
+mongosh "mongodb://your_user:your_password@your_host:27017/your_database?authSource=admin" --eval "db.your_collection.countDocuments({})"
 ```
 
 ### Environment Configuration
 
 Create `.env` file in project root:
 ```env
-MONGODB_URI=mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin
-MONGODB_DATABASE=dwc2json
-MONGODB_COLLECTION=monografias
+MONGODB_URI=mongodb://your_user:your_password@your_host:27017/?authSource=admin
+MONGODB_DATABASE=your_database
+MONGODB_COLLECTION=your_collection
 LOG_LEVEL=INFO
 ```
 
@@ -99,7 +99,7 @@ Processing time: 8.3 seconds
 **Validation**:
 ```bash
 # Query MongoDB to verify data
-mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?authSource=admin" --eval "
+mongosh "mongodb://your_user:your_password@your_host:27017/your_database?authSource=admin" --eval "
   db.monografias.findOne({}, {
     'structuredDescription.sourcePDF.filePath': 1,
     'processingMetadata.status': 1,
@@ -141,7 +141,7 @@ cat results.json | jq '.total_files, .succeeded | length'
 **Validation**:
 ```bash
 # Verify document count in MongoDB
-mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?authSource=admin" --eval "
+mongosh "mongodb://your_user:your_password@your_host:27017/your_database?authSource=admin" --eval "
   db.monografias.countDocuments({})
 "
 # Expected: Number of succeeded files
@@ -224,7 +224,7 @@ doclingtaxaBO process --input-dir monografias --verbose
 ```python
 # Query MongoDB and verify filtering
 from pymongo import MongoClient
-client = MongoClient("mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin")
+client = MongoClient("mongodb://your_user:your_password@your_host:27017/?authSource=admin")
 db = client.dwc2json
 doc = db.monografias.find_one({"structuredDescription.sourcePDF.filePath": {"$regex": "filtering_test"}})
 
