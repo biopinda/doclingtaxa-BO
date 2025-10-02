@@ -1,0 +1,311 @@
+Metadata-Version: 2.4
+Name: doclingtaxa
+Version: 0.1.0
+Summary: PDF Monograph to Structured JSON Conversion following Darwin Core standard
+Author: DoclingTaxa Team
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: docling>=1.0.0
+Requires-Dist: pymongo>=4.5.0
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: click>=8.1.0
+Requires-Dist: rich>=13.0.0
+Requires-Dist: loguru>=0.7.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-mongodb>=2.4.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+
+# DoclingTaxa
+
+PDF Monograph to Structured JSON Conversion following Darwin Core (DwC) standard.
+
+## Overview
+
+DoclingTaxa processes scientific monographs about fauna and flora in PDF format, extracting taxonomic, morphological, and ecological information into structured JSON documents stored in MongoDB. The system follows the Darwin Core (DwC) biodiversity data standard with extensions for detailed species descriptions.
+
+## Features
+
+- 🔬 **Darwin Core Compliance**: Output follows international biodiversity data standard
+- 📄 **PDF Processing**: Handles text-based and scanned (OCR) PDFs using Docling
+- 🗂️ **Structured Extraction**: Morphology, ecology, phenology, distribution, and diagnostic characters
+- 🌿 **Species-Level Focus**: Extracts only species-level descriptions (excludes Family/Genus)
+- 🚫 **Smart Filtering**: Automatically excludes identification keys
+- 📊 **MongoDB Storage**: Stores hierarchical taxonomic data with validation
+- 🔄 **Batch Processing**: Process entire directories with progress reporting
+- ✅ **Error Resilience**: Continues processing on individual failures
+
+## Requirements
+
+- Python 3.11 or higher
+- MongoDB 5.0+ (local or remote)
+- 2GB RAM (for PDF processing)
+- 500MB disk space (for dependencies)
+
+## Installation
+
+### 1. Clone Repository
+
+```bash
+git clone <repository-url>
+cd doclingtaxa
+```
+
+### 2. Create Virtual Environment
+
+```bash
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# Linux/macOS
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
+# Production dependencies
+pip install -e .
+
+# Development dependencies (includes testing tools)
+pip install -e ".[dev]"
+```
+
+### 4. Configure Environment
+
+```bash
+# Copy template (already configured with production MongoDB)
+cp .env.template .env
+
+# Configuration is pre-set for production MongoDB:
+# MONGODB_URI=mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin
+# MONGODB_DATABASE=dwc2json
+# MONGODB_COLLECTION=monografias
+```
+
+### 5. Verify MongoDB Connection
+
+```bash
+# Test connection to production MongoDB
+mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin" --eval "db.runCommand({ ping: 1 })"
+
+# Verify database and collection
+mongosh "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?authSource=admin" --eval "db.monografias.countDocuments({})"
+```
+
+## Quick Start
+
+### Process Test Monographs Directory
+
+```bash
+# Process monographs from the test directory
+doclingtaxa process --input-dir monografias
+```
+
+### Process Custom Directory
+
+```bash
+doclingtaxa process --input-dir /path/to/pdfs
+```
+
+### With Custom MongoDB URI (if needed)
+
+```bash
+doclingtaxa process --input-dir /path/to/pdfs --mongodb-uri "mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/?authSource=admin"
+```
+
+### JSON Output Format
+
+```bash
+doclingtaxa process --input-dir /path/to/pdfs --output-format json > results.json
+```
+
+### Verbose Logging
+
+```bash
+doclingtaxa process --input-dir /path/to/pdfs --verbose
+```
+
+## CLI Usage
+
+```
+doclingtaxa process [OPTIONS]
+
+Options:
+  --input-dir TEXT        Directory containing PDF monographs [required]
+  --mongodb-uri TEXT      MongoDB connection string [default: from .env]
+  --output-format TEXT    Output format: json|human [default: human]
+  --verbose              Enable debug logging
+  --help                 Show this message and exit
+```
+
+## Output Example
+
+### Human-Readable Format
+```
+Processing PDFs from: monografias
+MongoDB: mongodb://dwc2json@192.168.1.10:27017/dwc2json (collection: monografias)
+
+[1/5] flora_brazil.pdf ... ✓ (47 species, 12.3s)
+[2/5] fauna_mammals.pdf ... ✓ (23 species, 8.1s)
+[3/5] corrupted.pdf ... ✗ (Invalid PDF format)
+[4/5] empty.pdf ... ⚠ (0 species, 2.1s)
+[5/5] large_monograph.pdf ... ✓ (156 species, 45.7s)
+
+Summary:
+  Total:     5 files
+  Succeeded: 3 files (226 species)
+  Failed:    1 file
+  Warnings:  1 file
+
+Processing time: 68.2 seconds
+```
+
+### JSON Format
+```json
+{
+  "total_files": 5,
+  "succeeded": [
+    {"path": "monografias/flora_brazil.pdf", "species": 47, "duration": 12.3},
+    {"path": "monografias/fauna_mammals.pdf", "species": 23, "duration": 8.1}
+  ],
+  "failed": [
+    {"path": "monografias/corrupted.pdf", "error": "Invalid PDF format"}
+  ],
+  "processing_time_seconds": 68.2
+}
+```
+
+## Darwin Core Schema
+
+The system stores data using Darwin Core (DwC) standard fields with extensions:
+
+### Core DwC Fields
+- `scientificName`, `canonicalName`, `scientificNameAuthorship`
+- `kingdom`, `phylum`, `class`, `order`, `family`, `genus`, `specificEpithet`
+- `higherClassification` (pipe-delimited hierarchy)
+- `distribution` (phytogeographic domains, vegetation types, occurrence)
+- `speciesprofile` (life form, habitat/substrate)
+- `vernacularname` (common names with language)
+- `reference` (bibliographic citations)
+
+### Extensions (New Fields)
+- **`structuredDescription`**: Detailed species descriptions
+  - `morphology`: habit, height, stems, leaves, flowers, fruits, seeds
+  - `ecology`: habitat, associates, altitude, soil, luminosity
+  - `phenology`: flowering, fruiting, leaf shedding
+  - `distribution`: detailed distribution with states, municipalities
+  - `diagnosticCharacters`: key identification features
+  - `uses`: economic, medicinal, ornamental, ecological
+  - `conservationStatus`: IUCN category, criteria, threats
+
+- **`processingMetadata`**: Extraction status tracking
+  - `status`: completed|partial|failed
+  - `extractedSections`: list of successfully parsed sections
+  - `validationWarnings`: non-fatal issues
+  - `extractionErrors`: error messages
+  - `processingDuration`: time in seconds
+
+## MongoDB Query Examples
+
+**Connection**: `mongodb://dwc2json:VLWQ8Bke65L52hfBM635@192.168.1.10:27017/dwc2json?authSource=admin`
+
+### Query by Scientific Name
+```javascript
+use dwc2json
+db.monografias.find({ scientificName: "Handroanthus chrysotrichus" })
+```
+
+### Query by Family
+```javascript
+db.monografias.find({ family: "Bignoniaceae" })
+```
+
+### Get Total Species Count
+```javascript
+db.monografias.countDocuments({ taxonRank: "species" })
+```
+
+### Find Species in Specific Domain
+```javascript
+db.monografias.find({
+  "distribution.phytogeographicDomains": "Mata Atlântica"
+})
+```
+
+### Query by Source PDF
+```javascript
+db.monografias.find({
+  "structuredDescription.sourcePDF.filePath": { $regex: "flora_brazil" }
+})
+```
+
+## Development
+
+### Run Tests
+```bash
+# All tests
+pytest
+
+# Contract tests only
+pytest -m contract
+
+# Integration tests only
+pytest -m integration
+
+# With coverage report
+pytest --cov=src --cov-report=html
+```
+
+### Code Quality
+```bash
+# Linting
+ruff check src/ tests/
+
+# Formatting
+black src/ tests/
+
+# Type checking (if using mypy)
+mypy src/
+```
+
+### Project Structure
+```
+doclingtaxa/
+├── src/
+│   ├── models/              # Pydantic models (DwC schema)
+│   ├── extractors/          # PDF processing logic
+│   ├── storage/             # MongoDB persistence
+│   ├── cli/                 # Command-line interface
+│   └── lib/                 # Core library interface
+├── tests/
+│   ├── contract/            # Schema compliance tests
+│   ├── integration/         # End-to-end tests
+│   └── unit/                # Component tests
+├── specs/                   # Design documentation
+└── pyproject.toml          # Project configuration
+```
+
+## Contributing
+
+1. Read the specification: `specs/main/spec.md`
+2. Follow TDD: Write tests first (see `specs/main/tasks.md`)
+3. Ensure DwC compliance: Validate against `specs/main/contracts/mongodb-schema-dwc-extended.json`
+4. Run tests and linting before committing
+5. Update documentation as needed
+
+## License
+
+[Add license information]
+
+## References
+
+- [Darwin Core Standard](https://dwc.tdwg.org)
+- [Docling Library](https://github.com/docling-project/docling)
+- [MongoDB Python Driver](https://pymongo.readthedocs.io)
+- [Pydantic Documentation](https://docs.pydantic.dev)
