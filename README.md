@@ -177,11 +177,11 @@ Opções:
 Processando PDFs de: monografias
 MongoDB: mongodb://usuario@host:27017/banco (coleção: colecao)
 
-[1/5] flora_brazil.pdf ... ✓ (47 espécies, 12.3s)
-[2/5] fauna_mammals.pdf ... ✓ (23 espécies, 8.1s)
+[1/5] bignoniaceae.pdf ... ✓ (47 espécies, 12.3s)
+[2/5] felidae.pdf ... ✓ (23 espécies, 8.1s)
 [3/5] corrupted.pdf ... ✗ (Formato de PDF inválido)
 [4/5] empty.pdf ... ⚠ (0 espécies, 2.1s)
-[5/5] large_monograph.pdf ... ✓ (156 espécies, 45.7s)
+[5/5] orchidaceae.pdf ... ✓ (156 espécies, 45.7s)
 
 Resumo:
   Total:     5 arquivos
@@ -198,8 +198,9 @@ Tempo de processamento: 68.2 segundos
 {
   "total_files": 5,
   "succeeded": [
-    {"path": "monografias/flora_brazil.pdf", "species": 47, "duration": 12.3},
-    {"path": "monografias/fauna_mammals.pdf", "species": 23, "duration": 8.1}
+    {"path": "monografias/bignoniaceae.pdf", "species": 47, "duration": 12.3},
+    {"path": "monografias/felidae.pdf", "species": 23, "duration": 8.1},
+    {"path": "monografias/orchidaceae.pdf", "species": 156, "duration": 45.7}
   ],
   "failed": [
     {"path": "monografias/corrupted.pdf", "error": "Formato de PDF inválido"}
@@ -275,7 +276,7 @@ db.sua_colecao.find({
 
 ```javascript
 db.sua_colecao.find({
-  "structuredDescription.sourcePDF.filePath": { $regex: "flora_brazil" }
+  "structuredDescription.sourcePDF.filePath": { $regex: "bignoniaceae" }
 })
 ```
 
