@@ -47,16 +47,23 @@ Process scientific monographs (PDFs) containing fauna and flora taxonomic data, 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**Status**: ⚠️ Constitution template not populated - project has placeholder constitution
+**Status**: ✅ PASS - Constitution v1.0.0 ratified 2025-10-03
 
-Since the constitution file contains only placeholders (`[PROJECT_NAME]`, `[PRINCIPLE_1_NAME]`, etc.), no specific architectural principles are enforced. Default best practices will be applied:
-- ✅ Library-first approach: Core PDF processing as reusable library
-- ✅ CLI interface: Command-line tool for directory processing
-- ✅ Test-first development: Contract tests before implementation
-- ✅ Error handling: Graceful failures with meaningful messages
-- ✅ Simplicity: Direct MongoDB storage, no unnecessary abstraction layers
+All 6 core principles defined and enforced:
+- ✅ **I. Library-First Architecture**: Core PDF processing as reusable library with API contracts
+- ✅ **II. CLI Interface Standard**: All library functions exposed via CLI (JSON + human output)
+- ✅ **III. Test-First Development (NON-NEGOTIABLE)**: Contract tests before implementation, 80% coverage
+- ✅ **IV. Darwin Core Compliance**: All taxonomic data conforms to DwC standard schema
+- ✅ **V. Simplicity & YAGNI**: Sequential processing, direct MongoDB access, no over-engineering
+- ✅ **VI. Observability**: Structured logging, progress reporting for batch operations
 
-**Recommendation**: Run `/constitution` to define project-specific principles before scaling.
+**Design Compliance**:
+- Library-first: plan.md specifies library interface (src/lib/processor.py) before CLI (src/cli/main.py)
+- CLI standard: quickstart.md documents both JSON and human output formats, exit codes
+- TDD: tasks.md Phase 3.2 enforces contract tests (T006-T017) MUST fail before implementation
+- DwC compliance: data-model.md strictly follows schema-dwc2json-taxa-mongoDBJSON.json
+- Simplicity: No parallel processing (sequential), direct MongoDB via pymongo, flat DwC structure
+- Observability: research.md specifies structured logging (loguru), CLI progress (rich.progress)
 
 ## Project Structure
 
@@ -274,4 +281,4 @@ specs/main/
 **Next Command**: Run `/tasks` to generate tasks.md
 
 ---
-*Based on Constitution v2.1.1 - See `.specify/memory/constitution.md`*
+*Based on Constitution v1.0.0 (ratified 2025-10-03) - See `.specify/memory/constitution.md`*

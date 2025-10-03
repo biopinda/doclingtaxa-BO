@@ -1,0 +1,15 @@
+# Core dependencies
+docling>=1.0.0
+pymongo>=4.5.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+click>=8.1.0
+rich>=13.0.0
+loguru>=0.7.0
+
+# Development dependencies
+pytest>=7.4.0
+pytest-mongodb>=2.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+ruff>=0.1.0

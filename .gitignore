@@ -53,6 +53,10 @@ coverage.xml
 *.cover
 .hypothesis/
 
+# Linting/Formatting
+.ruff_cache/
+.mypy_cache/
+
 # Logs
 *.log
 logs/

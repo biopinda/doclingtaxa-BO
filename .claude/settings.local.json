@@ -27,7 +27,13 @@
       "Bash(git pull:*)",
       "Bash(git checkout:*)",
       "WebFetch(domain:github.com)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Read(//h/**)",
+      "Bash(powershell:*)",
+      "Bash(grep:*)",
+      "Bash(dir:*)",
+      "Bash(test:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
