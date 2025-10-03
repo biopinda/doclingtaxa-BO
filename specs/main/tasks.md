@@ -64,10 +64,23 @@
 
 ### Contract Tests (DwC Schema Compliance)
 
-- [ ] **T006** [P] Contract test: DwC schema validation
+- [ ] **T005.5** [P] Contract test: Species-level filtering (FR-010b)
+  - Test species-level records (taxonRank="species") MUST have populated structuredDescription
+  - Test family-level records (taxonRank="family") MUST have structuredDescription=null
+  - Test genus-level records (taxonRank="genus") MUST have structuredDescription=null
+  - Test identification key text excluded from all description fields
+  - Verify keyword blocklist: "chave de identificação", "identification key", "dicotômica"
+  - File: `tests/contract/test_species_filtering.py`
+  - **MUST FAIL before T024 implementation**
+
+- [ ] **T006** [P] Contract test: DwC schema validation and core fields (FR-010a)
   - Test Pydantic models serialize to valid DwC JSON
   - Validate against `specs/main/contracts/mongodb-schema-dwc-extended.json`
-  - Test all required DwC fields present
+  - Test all required DwC fields present: scientificName, taxonRank, family, genus
+  - Test all 5 core extracted fields present (FR-010a): Forma de Vida, Substrato, Domínios Fitogeográficos, Tipos de Vegetação, Distribuição Geográfica
+  - Verify mapping: Forma de Vida → speciesprofile.lifeForm.lifeForm[], Substrato → speciesprofile.lifeForm.habitat[]
+  - Verify mapping: Domínios Fitogeográficos → distribution.phytogeographicDomains[], Tipos de Vegetação → distribution.vegetationType[]
+  - Verify mapping: Distribuição Geográfica → distribution.occurrence[]
   - File: `tests/contract/test_dwc_schema_validation.py`
 
 - [ ] **T007** [P] Contract test: Pydantic model serialization

@@ -103,17 +103,20 @@ mongosh "mongodb://your_user:your_password@your_host:27017/your_database?authSou
   db.monografias.findOne({}, {
     'structuredDescription.sourcePDF.filePath': 1,
     'processingMetadata.status': 1,
-    'scientificName': 1
+    'scientificName': 1,
+    'taxonRank': 1,
+    'family': 1,
+    'genus': 1
   })
 "
 ```
 
 **Success Criteria**:
 - ✅ Exit code 0
-- ✅ MongoDB document inserted
-- ✅ `metadata.status = "completed"`
-- ✅ `taxonomy_root` has nested structure (Kingdom → Species)
-- ✅ All species nodes have `description` and `biological_attributes`
+- ✅ MongoDB document inserted with DwC schema
+- ✅ `processingMetadata.status = "completed"`
+- ✅ DwC fields populated: scientificName, taxonRank, family, genus, higherClassification
+- ✅ Species-level records have populated structuredDescription field
 
 ---
 
@@ -148,8 +151,8 @@ mongosh "mongodb://your_user:your_password@your_host:27017/your_database?authSou
 ```
 
 **Success Criteria**:
-- ✅ Each successful PDF has one MongoDB document
-- ✅ `source_pdf_hash` unique for each document
+- ✅ Each successful PDF creates DwC-compliant MongoDB documents
+- ✅ `structuredDescription.sourcePDF.fileHash` unique for each document (duplicate prevention)
 - ✅ Processing continues after individual failures
 
 ---
@@ -222,32 +225,36 @@ doclingtaxaBO process --input-dir monografias --verbose
 
 **Validation**:
 ```python
-# Query MongoDB and verify filtering
+# Query MongoDB and verify species-level filtering
 from pymongo import MongoClient
 client = MongoClient("mongodb://your_user:your_password@your_host:27017/?authSource=admin")
-db = client.dwc2json
-doc = db.monografias.find_one({"structuredDescription.sourcePDF.filePath": {"$regex": "filtering_test"}})
+db = client.your_database
 
-# Traverse taxonomy tree
-def check_descriptions(node):
-    if node["rank"] in ["family", "genus"]:
-        assert node["description"] is None, f"{node['rank']} should not have description"
-        assert node["biological_attributes"] is None
-    elif node["rank"] == "species":
-        assert node["description"] is not None, "Species must have description"
-        assert node["biological_attributes"] is not None
+# Check family-level records have no structuredDescription
+family_doc = db.monografias.find_one({"taxonRank": "family"})
+assert family_doc["structuredDescription"] is None, "Family records should not have structuredDescription"
 
-    for child in node["children"]:
-        check_descriptions(child)
+# Check genus-level records have no structuredDescription
+genus_doc = db.monografias.find_one({"taxonRank": "genus"})
+assert genus_doc["structuredDescription"] is None, "Genus records should not have structuredDescription"
 
-check_descriptions(doc["taxonomy_root"])
+# Check species-level records have structuredDescription
+species_doc = db.monografias.find_one({"taxonRank": "species"})
+assert species_doc["structuredDescription"] is not None, "Species must have structuredDescription"
+assert species_doc["structuredDescription"]["morphology"] is not None or \
+       species_doc["structuredDescription"]["ecology"] is not None, "Species needs morphology or ecology data"
+
+# Verify no identification key text in descriptions
+import json
+doc_text = json.dumps(species_doc["structuredDescription"])
+assert "chave de identificação" not in doc_text.lower(), "Identification keys should be excluded"
+assert "identification key" not in doc_text.lower(), "Identification keys should be excluded"
 ```
 
 **Success Criteria**:
-- ✅ Family nodes: `description = null`, `biological_attributes = null`
-- ✅ Genus nodes: `description = null`, `biological_attributes = null`
-- ✅ Species nodes: `description` present, `biological_attributes` present
-- ✅ No "chave de identificação" text in descriptions
+- ✅ Family/Genus taxonRank documents: `structuredDescription = null`
+- ✅ Species taxonRank documents: `structuredDescription` populated with morphology/ecology
+- ✅ No "chave de identificação" or "identification key" text in structuredDescription fields
 
 ---
 
@@ -260,20 +267,24 @@ check_descriptions(doc["taxonomy_root"])
 # 1. Process monografias data
 doclingtaxaBO process --input-dir monografias
 
-# 2. Query all documents
-mongosh mongodb://localhost:27017/taxonomy_db --eval "
-  db.monographs.find({}, {
-    'monograph_title': 1,
-    'metadata.total_species_extracted': 1,
-    'processing_timestamp': 1
-  }).sort({ processing_timestamp: -1 })
+# 2. Query all species documents
+mongosh "mongodb://your_user:your_password@your_host:27017/your_database?authSource=admin" --eval "
+  db.monografias.find(
+    { 'taxonRank': 'species' },
+    {
+      'scientificName': 1,
+      'family': 1,
+      'processingMetadata.status': 1,
+      'structuredDescription.sourcePDF.extractedDate': 1
+    }
+  ).sort({ 'structuredDescription.sourcePDF.extractedDate': -1 })
 "
 
-# 3. Query specific monograph by species count
-mongosh mongodb://localhost:27017/taxonomy_db --eval "
-  db.monographs.findOne(
-    { 'metadata.total_species_extracted': { \$gt: 50 } },
-    { 'taxonomy_root': 1 }
+# 3. Query specific family's species
+mongosh "mongodb://your_user:your_password@your_host:27017/your_database?authSource=admin" --eval "
+  db.monografias.find(
+    { 'family': 'Bignoniaceae', 'taxonRank': 'species' },
+    { 'scientificName': 1, 'distribution.occurrence': 1 }
   )
 "
 ```
@@ -281,24 +292,32 @@ mongosh mongodb://localhost:27017/taxonomy_db --eval "
 **Validation Queries**:
 
 ```javascript
-// Query 1: Find all completed monographs
-db.monographs.find({ "metadata.status": "completed" }).count()
+// Query 1: Find all completed extractions
+db.monografias.find({ "processingMetadata.status": "completed" }).count()
 
-// Query 2: Total species across all documents
-db.monographs.aggregate([
-  { $group: { _id: null, total: { $sum: "$metadata.total_species_extracted" } } }
+// Query 2: Total species by family
+db.monografias.aggregate([
+  { $match: { "taxonRank": "species" } },
+  { $group: { _id: "$family", count: { $sum: 1 } } },
+  { $sort: { count: -1 } }
 ])
 
 // Query 3: Find duplicate PDF hashes (should be none)
-db.monographs.aggregate([
-  { $group: { _id: "$source_pdf_hash", count: { $sum: 1 } } },
+db.monografias.aggregate([
+  { $group: { _id: "$structuredDescription.sourcePDF.fileHash", count: { $sum: 1 } } },
   { $match: { count: { $gt: 1 } } }
 ])
+
+// Query 4: Find species by phytogeographic domain
+db.monografias.find({
+  "taxonRank": "species",
+  "distribution.phytogeographicDomains": "Mata Atlântica"
+}, { "scientificName": 1, "distribution.occurrence": 1 })
 ```
 
 **Success Criteria**:
 - ✅ All queries return results in < 1 second
-- ✅ Hierarchical structure preserved in `taxonomy_root`
+- ✅ DwC flat structure with higherClassification field for hierarchy
 - ✅ Indexes used for queries (check with `.explain()`)
 
 ---
@@ -337,24 +356,33 @@ doclingtaxaBO process --input-dir monografias --output-format json > partial_res
 **Validation**:
 ```python
 # Verify document saved with warnings
-doc = db.monographs.find_one({"source_pdf_path": {"$regex": "incomplete.pdf"}})
-assert doc["metadata"]["status"] == "partial"
-assert len(doc["metadata"]["validation_warnings"]) > 0
-assert doc["metadata"]["total_species_extracted"] == 5
+from pymongo import MongoClient
+client = MongoClient("mongodb://your_user:your_password@your_host:27017/?authSource=admin")
+db = client.your_database
 
-# Verify species still included despite missing fields
-species_nodes = [n for n in doc["taxonomy_root"]["children"] if n["rank"] == "species"]
-assert len(species_nodes) == 5
-for species in species_nodes:
-    assert species["scientific_name"] is not None
-    assert species["description"] is not None
+doc = db.monografias.find_one({"structuredDescription.sourcePDF.filePath": {"$regex": "incomplete.pdf"}})
+assert doc["processingMetadata"]["status"] == "partial"
+assert len(doc["processingMetadata"]["validationWarnings"]) > 0
+
+# Verify species record still included despite missing optional fields
+assert doc["taxonRank"] == "species"
+assert doc["scientificName"] is not None
+assert doc["structuredDescription"] is not None
+
+# Check for missing optional fields (should have warnings)
+warnings = doc["processingMetadata"]["validationWarnings"]
+assert any("optional field" in w.lower() for w in warnings)
+
+# Verify required DwC fields always present
+assert doc["family"] is not None
+assert doc["genus"] is not None
 ```
 
 **Success Criteria**:
-- ✅ Document saved with `status = "partial"`
-- ✅ `validation_warnings` list populated
-- ✅ Species included even with null optional fields
-- ✅ Required fields (scientific_name, description) always present
+- ✅ Document saved with `processingMetadata.status = "partial"`
+- ✅ `processingMetadata.validationWarnings` list populated
+- ✅ Species records included even with null optional fields (e.g., missing altitudeRange, soilType)
+- ✅ Required DwC fields (scientificName, family, genus, taxonRank) always present
 
 ---
 

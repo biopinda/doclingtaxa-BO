@@ -8,9 +8,14 @@
 
 This system extends the existing Darwin Core MongoDB schema to include structured species descriptions extracted from PDF monographs. The base schema follows DwC standard with additional fields for parsed morphological and ecological data.
 
-## Base Schema (Darwin Core)
+**Architecture**:
+1. **MongoDB Documents**: Store taxonomic data following DwC schema (flat structure, one document per taxon)
+2. **Pydantic Models**: Validate data before MongoDB insertion (Python classes: DarwinCoreTaxon, StructuredDescription, etc.)
+3. **Schema Extensions**: New fields (structuredDescription, processingMetadata) extend base DwC schema
 
-### Existing DwC Taxon Record (schema-dwc2json-taxa-mongoDBJSON.json)
+## Section 1: MongoDB Document Schema (Darwin Core)
+
+### 1.1 Base DwC Taxon Document (schema-dwc2json-taxa-mongoDBJSON.json)
 
 **Core Taxonomic Fields** (Required):
 | Field | Type | Description |
@@ -131,9 +136,9 @@ This system extends the existing Darwin Core MongoDB schema to include structure
 }
 ```
 
-## New Extension: Structured Descriptions
+### 1.2 Schema Extensions for PDF Monographs
 
-### 1. structuredDescription (New Field)
+#### 1.2.1 structuredDescription (New Field)
 
 **Purpose**: Store parsed, structured species descriptions extracted from PDF monographs
 
@@ -233,7 +238,7 @@ This system extends the existing Darwin Core MongoDB schema to include structure
 }
 ```
 
-### 2. processingMetadata (New Field)
+#### 1.2.2 processingMetadata (New Field)
 
 **Purpose**: Track PDF extraction and processing status
 
@@ -266,29 +271,9 @@ This system extends the existing Darwin Core MongoDB schema to include structure
 }
 ```
 
-## Data Mapping Strategy
+### 1.3 Example Complete MongoDB Document
 
-### PDF Extraction → DwC Fields Mapping
-
-| Extracted Data | Target DwC Field | Notes |
-|----------------|------------------|-------|
-| Scientific name | `scientificName`, `canonicalName` | Parse author from full name |
-| Author citation | `scientificNameAuthorship` | Extract from name string |
-| Family | `family` | From taxonomic hierarchy section |
-| Genus | `genus` | From taxonomic hierarchy section |
-| Common names | `vernacularname[]` | Array of objects with language |
-| Life form (Forma de Vida) | `speciesprofile.lifeForm.lifeForm[]` | Map to existing array field |
-| Substrate | `speciesprofile.lifeForm.habitat[]` | Add to habitat array |
-| Phytogeographic domains | `distribution.phytogeographicDomains[]` | Direct mapping |
-| Vegetation types | `distribution.vegetationType[]` | Direct mapping |
-| Geographic distribution | `distribution.occurrence[]` | Parse states/regions |
-| Morphological description | `structuredDescription.morphology.*` | NEW - Structured sections |
-| Ecological notes | `structuredDescription.ecology.*` | NEW - Habitat details |
-| Phenology | `structuredDescription.phenology.*` | NEW - Flowering/fruiting |
-| Uses | `structuredDescription.uses.*` | NEW - Economic/medicinal |
-| References | `reference[]` | Bibliography from PDF |
-
-### Example Complete Document
+**Note**: This is a MongoDB document stored in the database. See Section 2 for corresponding Pydantic validation models.
 
 ```json
 {
@@ -398,7 +383,42 @@ This system extends the existing Darwin Core MongoDB schema to include structure
 }
 ```
 
-## Validation Rules
+---
+
+## Section 2: Pydantic Validation Models
+
+**Purpose**: Validate taxonomic data BEFORE inserting into MongoDB. These Python classes ensure data conforms to DwC schema.
+
+**Workflow**: PDF → Extraction → Pydantic Model Validation → MongoDB Insert
+
+### 2.1 PDF Extraction → DwC Fields Mapping
+
+| Extracted Data | Target DwC Field | Notes |
+|----------------|------------------|-------|
+| Scientific name | `scientificName`, `canonicalName` | Parse author from full name |
+| Author citation | `scientificNameAuthorship` | Extract from name string |
+| Family | `family` | From taxonomic hierarchy section |
+| Genus | `genus` | From taxonomic hierarchy section |
+| Common names | `vernacularname[]` | Array of objects with language |
+| Life form (Forma de Vida) | `speciesprofile.lifeForm.lifeForm[]` | Map to existing array field |
+| Substrate | `speciesprofile.lifeForm.habitat[]` | Add to habitat array |
+| Phytogeographic domains | `distribution.phytogeographicDomains[]` | Direct mapping |
+| Vegetation types | `distribution.vegetationType[]` | Direct mapping |
+| Geographic distribution | `distribution.occurrence[]` | Parse states/regions |
+| Morphological description | `structuredDescription.morphology.*` | NEW - Structured sections |
+| Ecological notes | `structuredDescription.ecology.*` | NEW - Habitat details |
+| Phenology | `structuredDescription.phenology.*` | NEW - Flowering/fruiting |
+| Uses | `structuredDescription.uses.*` | NEW - Economic/medicinal |
+| References | `reference[]` | Bibliography from PDF |
+
+### 2.2 Pydantic Model Definitions (Implementation Reference)
+
+**Implementation Files**:
+- `src/models/dwc_taxon.py` - DarwinCoreTaxon, Distribution, SpeciesProfile, VernacularName, Reference, OtherName, TypeSpecimen
+- `src/models/structured_description.py` - StructuredDescription, SourcePDF, Morphology, Ecology, Phenology, etc.
+- `src/models/processing.py` - ProcessingMetadata
+
+## Section 3: Validation Rules
 
 ### Required Fields (DwC Core)
 1. `scientificName` - Must be non-empty
@@ -426,7 +446,7 @@ This system extends the existing Darwin Core MongoDB schema to include structure
 3. Missing `bibliographicCitation` - Warn
 4. No `reference[]` entries - Warn
 
-## Exclusion Rules (From Spec)
+## Section 4: Exclusion Rules (From Spec)
 
 1. **Family/Genus descriptions**:
    - Do NOT populate `structuredDescription` for `taxonRank != "species"`
@@ -437,7 +457,7 @@ This system extends the existing Darwin Core MongoDB schema to include structure
    - Exclude from all description fields
    - Log in `processingMetadata.extractedSections` as "identification_key_excluded"
 
-## Indexes (MongoDB)
+## Section 5: MongoDB Indexes
 
 ### Existing Indexes (Preserve)
 - `taxonID`: Unique index
@@ -449,84 +469,28 @@ This system extends the existing Darwin Core MongoDB schema to include structure
 - `processingMetadata.status`: For filtering processing outcomes
 - `structuredDescription.sourcePDF.extractedDate`: Descending (recent first)
 
-## Pydantic Models (Implementation)
+## Section 6: Implementation Reference (Pydantic Models)
 
-### DarwinCoreTaxon (Base Model)
-```python
-from pydantic import BaseModel, Field
-from typing import Optional, List
-from datetime import datetime
+**Note**: Full Pydantic model code is implemented in tasks T018-T020. This section provides a simplified reference.
 
-class Distribution(BaseModel):
-    occurrence: Optional[List[Optional[str]]] = None
-    countryCode: Optional[List[str]] = None
-    phytogeographicDomains: List[str] = []
-    vegetationType: List[str] = []
-    origin: Optional[str] = None
-    Endemism: Optional[str] = None
+### Key Pydantic Models
 
-class SpeciesProfile(BaseModel):
-    lifeForm: dict  # Complex nested structure
+**DarwinCoreTaxon** (Primary validation model):
+- Validates all DwC core fields before MongoDB insert
+- Includes extensions: structuredDescription, processingMetadata
+- Handles field aliasing (_id ↔ id)
+- Enforces type constraints (str, List[str], Optional fields)
 
-class VernacularName(BaseModel):
-    vernacularName: str
-    language: str
-    locality: Optional[str] = None
+**StructuredDescription** (PDF extraction validation):
+- Validates sourcePDF required fields (filePath, fileHash, extractedDate)
+- Validates optional morphology/ecology/phenology sections
+- Ensures nested structure conforms to schema
 
-class Reference(BaseModel):
-    bibliographicCitation: str
-    title: Optional[str] = None
-    creator: Optional[str] = None
-    date: Optional[str] = None
-    identifier: Optional[str] = None
-    type: Optional[str] = None
+**ProcessingMetadata** (Extraction tracking):
+- Validates status enum: "completed" | "partial" | "failed"
+- Tracks extraction sections, warnings, errors
 
-class StructuredDescription(BaseModel):
-    sourcePDF: dict
-    morphology: Optional[dict] = None
-    ecology: Optional[dict] = None
-    phenology: Optional[dict] = None
-    distribution: Optional[dict] = None
-    diagnosticCharacters: List[str] = []
-    uses: Optional[dict] = None
-    conservationStatus: Optional[dict] = None
-    rawText: Optional[str] = None
-
-class ProcessingMetadata(BaseModel):
-    status: str  # completed, partial, failed
-    extractedSections: List[str] = []
-    validationWarnings: List[str] = []
-    extractionErrors: List[str] = []
-    processingDuration: float
-    doclingVersion: str
-
-class DarwinCoreTaxon(BaseModel):
-    id: Optional[str] = Field(None, alias="_id")
-    taxonID: str
-    scientificName: str
-    canonicalName: str
-    scientificNameAuthorship: str
-    taxonRank: str
-    kingdom: str
-    phylum: str
-    family: str
-    genus: str
-    specificEpithet: Optional[str] = None
-    higherClassification: str
-    bibliographicCitation: str
-
-    distribution: Optional[Distribution] = None
-    speciesprofile: Optional[SpeciesProfile] = None
-    vernacularname: List[VernacularName] = []
-    reference: List[Reference] = []
-
-    # New extensions
-    structuredDescription: Optional[StructuredDescription] = None
-    processingMetadata: Optional[ProcessingMetadata] = None
-
-    class Config:
-        populate_by_name = True
-```
+**Implementation Details**: See tasks T018-T020 for complete Pydantic model definitions with validators and serializers.
 
 ## Next Steps
 

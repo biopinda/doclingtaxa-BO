@@ -100,12 +100,10 @@ A researcher or data analyst needs to process scientific monographs about fauna 
 - **FR-005**: System MUST handle both fauna and flora monographs
 - **FR-006**: System MUST report processing status for each document (success, failure, warnings)
 - **FR-007**: System MUST handle errors gracefully and provide meaningful error messages when PDF processing fails
-- **FR-008**: Users MUST be able to specify a directory path containing PDF monographs to process
-- **FR-008a**: System MUST scan the specified directory and identify all PDF files for processing
-- **FR-009**: System MUST store the generated JSON data in a MongoDB database
-- **FR-009a**: System MUST create a database record for each successfully processed monograph containing the hierarchical taxonomy JSON structure
+- **FR-008**: System MUST accept a directory path and scan for all PDF files to process
+- **FR-009**: System MUST store generated JSON data as MongoDB documents for each successfully processed monograph
 - **FR-010**: System MUST validate that extracted data contains at minimum: scientific name and species description
-- **FR-010a**: System MUST extract the following core fields when present: Forma de Vida (life form), Substrato (substrate), Domínios Fitogeográficos (phytogeographic domains), Tipos de Vegetação (vegetation types), Distribuição Geográfica (geographic distribution)
+- **FR-010a**: System MUST extract core fields when present and map to Darwin Core schema: Forma de Vida → speciesprofile.lifeForm, Substrato → speciesprofile.habitat, Domínios Fitogeográficos → distribution.phytogeographicDomains, Tipos de Vegetação → distribution.vegetationType, Distribuição Geográfica → distribution.occurrence (see data-model.md for complete mapping)
 - **FR-010b**: System MUST process only species-level descriptions and exclude Family or Genus-level descriptions
 - **FR-010c**: System MUST discard identification keys (chave de identificação) and not include them in the JSON output
 - **FR-011**: System MUST process PDF files of any size on a best-effort basis without artificial file size or quantity limits
@@ -113,9 +111,9 @@ A researcher or data analyst needs to process scientific monographs about fauna 
 
 ### Key Entities *(include if feature involves data)*
 - **PDF Monograph**: Input document containing scientific information about fauna or flora species, including text, tables, figures, taxonomic classifications, morphological descriptions, ecological data, and distribution information
-- **Darwin Core Taxon Record**: MongoDB document following DwC standard schema containing taxonomic classification (kingdom, phylum, class, order, family, genus, scientificName), nomenclatural data (scientificNameAuthorship, bibliographicCitation), distribution data, vernacular names, references, and specimen information
-- **Structured Description**: New MongoDB field extension containing parsed species descriptions with sections for morphology, ecology, phenology, distribution details, and diagnostic characteristics extracted from PDF monographs
-- **Processing Job**: Represents a conversion task with status tracking (pending, processing, completed, failed), timestamps, error information, and references to source PDF path and MongoDB document ID
+- **DarwinCoreTaxon**: MongoDB document following DwC standard schema containing taxonomic classification (kingdom, phylum, class, order, family, genus, scientificName), nomenclatural data (scientificNameAuthorship, bibliographicCitation), distribution data, vernacular names, references, and specimen information (stored as MongoDB document; validated by Pydantic model before insertion)
+- **StructuredDescription**: New MongoDB field extension containing parsed species descriptions with sections for morphology, ecology, phenology, distribution details, and diagnostic characteristics extracted from PDF monographs
+- **ProcessingMetadata**: Tracks extraction status (completed, partial, failed), timestamps, error information, validation warnings, and processing duration for each PDF conversion
 - **Species Profile Data**: Life form (lifeForm), habitat (substrate), phytogeographic domains, vegetation types, occurrence data, and endemism status - mapped to existing DwC fields (speciesprofile, distribution)
 
 ---
